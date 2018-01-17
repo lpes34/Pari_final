@@ -8,8 +8,8 @@ set(SOURCES1 src/client.c src/myf.c)
 
 
 
-include_directories ("${PROJECT_SOURCE_DIR}/../Aula13/Ex1/srcmyutils")
-link_directories ("${PROJECT_SOURCE_DIR}/../Aula13/Ex1/lib")
+include_directories ("${PROJECT_SOURCE_DIR}/../../../Aula13/Ex1/srcmyutils")
+link_directories ("${PROJECT_SOURCE_DIR}/../../../Aula13/Ex1/lib")
 
 add_executable(${PROG1} ${SOURCES1})
 

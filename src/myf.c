@@ -12,6 +12,8 @@
 
 #include <ncurses.h>
 #include "myclient.h"
+#define myTIME 1		/*in ms */
+
 srv_status
 pari_TestServer (char *addr, int port, struct timeval *tv)
 {
@@ -63,13 +65,15 @@ pari_TestServer (char *addr, int port, struct timeval *tv)
  *
  * @return 1 in case of sucess. 0 for error.
  */
+
+
 int
 pari_AskDataFromServer (char *ip, int port, char *message, char *server_reply,
 			int maxChars)
 {
   int sock;
   int ret;
-  int ch;
+  int ch= -1;
   struct sockaddr_in server;
 
   bzero (&server, sizeof (server));	//fill with zeros
@@ -100,26 +104,44 @@ pari_AskDataFromServer (char *ip, int port, char *message, char *server_reply,
       printf ("Send failed\n");
       return 0;
     }
-int n=0;
+  int n = 4;
+	int i=0;
   //receive the answer up to a maximal size...
-  do
+  while (i<200)
     {
-      bzero (server_reply, maxChars);	//important when reading repeatidely
-n++;
-printw("%d\n",n);
-      ret = recv (sock, server_reply, maxChars, 0);
-      printf ("->%d<-", ret);
-      if (ret < 0)
-	{
-	  printf ("recv failed\n");
-	  return 0;
-	}
-      printw ("%s", server_reply);
-      ch = getch ();
-	printw("->%c<-",ch);
-    }
-  while (!ch);
 
+      bzero (server_reply, maxChars);	//important when reading repeatidely
+      
+      //printw ("%d:teste\n", n);
+//printw("nunber of cicles:%d\n",n);
+      ret = recv (sock, server_reply, maxChars, MSG_DONTWAIT);
+      //printw ("->%d<-", ret);
+      /*if (ret < 0)
+	{
+	  printw ("recv failed\n");
+	  return 0;
+	}*/
+	if(ret>0)
+     { //printw ("cicle=%d:ret=%d\n", n,ret);
+	n++;
+      mvprintw (n,0,"%d:%s\n",n, server_reply);
+	i=0;}
+else
+{i++;}
+      //      printw("chi=%d\n",ch);
+      //
+      //printw("ch=%d\n",ch);
+      /*if (n > 50)
+	{
+	  break;
+	}*/
+
+      refresh ();
+    }
+
+  //while (1);
+ch = getch ();
+printw("%d\n",ch);
   //close the socket before exiting
   close (sock);
   return ch;			//success
@@ -197,6 +219,74 @@ CreateNewMessage (int a, char *Dir1, char *Dir2, int *left, int *right,
 	  *Dir2 = 'B';
 	}
     }
+
+
+
+
+  if (a == 'C')			//arrow right
+    {
+      if (*Dir1 == 'F')
+	{
+	  *left += increment;
+	}
+      else if (*left > increment)	//Dir1=='B'
+	{
+	  *left -= increment;
+	}
+      else
+	{
+	  *left = 0;
+	  *Dir1 = 'F';
+	}
+
+
+      if (*Dir2 == 'B')
+	{
+	  *right += increment;
+	}
+      else if (*right >= increment)	//Dir2=='B'
+	{
+	  *right -= increment;
+	}
+      else
+	{
+	  *right = 0;
+	  *Dir2 = 'B';
+	}
+    }
+
+  if (a == 'D')			//arrow left
+    {
+      if (*Dir1 == 'B')
+	{
+	  *left += increment;
+	}
+      else if (*left >= increment)	//Dir1=='F'
+	{
+	  *left -= increment;
+	}
+      else
+	{
+	  *left = 0;
+	  *Dir1 = 'B';
+	}
+
+
+      if (*Dir2 == 'F')
+	{
+	  *right += increment;
+	}
+      else if (*right > increment)	//Dir2=='B'
+	{
+	  *right -= increment;
+	}
+      else
+	{
+	  *right = 0;
+	  *Dir2 = 'F';
+	}
+    }
+
   sprintf (message, "MM%s%d-%s%d>", Dir1, *left, Dir2, *right);
   return 1;
 }

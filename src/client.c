@@ -11,6 +11,7 @@
 #define MAXCHARS 4096		//just a large buffer for data chunks
 #define _MAIN_C_
 
+
 #include "myclient.h"
 
 int
@@ -44,11 +45,13 @@ main (int argc, char *argv[])
 
   sprintf (message, "MM%s%d-%s%d>", Dir1, *left, Dir2, *right);
 
+
 #if 1
   int ret;
   int ch;
 
   initscr ();			/* Start curses mode              */
+noecho();
 
   switch (retval)
     {
@@ -94,36 +97,55 @@ main (int argc, char *argv[])
 	  switch (getch ())
 	    {			// the real value
 	    case 'A':
-	      printw ("arrow up\n");
+	      mvprintw (1,0,"arrow up\n");
 		
 		CreateNewMessage ('A', Dir1, Dir2, left, right, message);
 	      //sprintf (message, "MMF20-F20>");
-		printw ("%s\n",message);
+		mvprintw (2,0,"message:%s\n",message);
 	      ch =
 		pari_AskDataFromServer (addr, port, message, server_reply,
 					MAXCHARS);
 	      break;
 	    case 'B':
-	      printw ("arrow down\n");
+	     mvprintw (1,0,"arrow down\n");
 		
 	      CreateNewMessage ('B', Dir1, Dir2, left, right, message);
 	      //sprintf (message, "MMB20-B20>");
-		printw ("%s\n",message);
+		mvprintw (2,0,"message:%s\n",message);
 	      ch =
 		pari_AskDataFromServer (addr, port, message, server_reply,
 					MAXCHARS);
 	      break;
 	    case 'C':
-	      printw ("code for arrow right\n");
+	      mvprintw (1,0,"code for arrow right\n");
+	      CreateNewMessage ('C', Dir1, Dir2, left, right, message);
+	      //sprintf (message, "MMB20-B20>");
+		mvprintw (2,0,"message:%s\n",message);
+	      ch =
+		pari_AskDataFromServer (addr, port, message, server_reply,
+					MAXCHARS);
 	      break;
 	    case 'D':
-	      printw (" code for arrow left\n");
+	      mvprintw (1,0," code for arrow left\n");
+	      CreateNewMessage ('D', Dir1, Dir2, left, right, message);
+	      //sprintf (message, "MMB20-B20>");
+		mvprintw (2,0,"message:%s\n",message);
+	      ch =
+		pari_AskDataFromServer (addr, port, message, server_reply,
+					MAXCHARS);
 	      break;
 	    }
 	}
+	else if(ch==' ')
+	{
+		mvprintw (1,0," code for encorder\n");
+		pari_AskDataFromServer (addr, port, "EN>", server_reply,
+					MAXCHARS);
+		
+	}
       refresh ();
     }
-  while (ch != ' ');
+  while (ch != 'q');
 
 
   printf ("Input Char Is :%c\n", ch);
@@ -139,5 +161,6 @@ main (int argc, char *argv[])
   free (Dir2);
   free (left);
   free (right);
+	endwin();
   return 0;
 }
