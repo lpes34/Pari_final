@@ -7,8 +7,6 @@
 #include <stdlib.h>
 #include <myutils.h>
 #include <ncurses.h>
-#include <sys/un.h>
-#include <sys/types.h>
 
 #define MAXCHARS 4096		//just a large buffer for data chunks
 #define _MAIN_C_
@@ -23,21 +21,29 @@ main (int argc, char *argv[])
   srv_status retval;
 
   char tmpfile[64];
-  mkstemp (tmpfile);
-
-//Connect to arduino
+  tmpnam (tmpfile);
   char message[20];
   int port = 50000;
-  char addr2[20];
-  sprintf (addr2, "192.168.0.10");
+  char addr[20];
+
+  int sock = socket (AF_UNIX, SOCK_STREAM, 0);
+
+  if (sock == -1)
+    {
+      perror ("error creating socket");
+    }
+
+  sprintf (addr, "192.168.0.10");
 
   tv.tv_sec = 0;
   tv.tv_usec = 600000;
-  retval = pari_TestServer (addr2, port, &tv);
-
-//------------------
+  retval = pari_TestServer (addr, port, &tv);
 
 
+  struct sockaddr_un addr;
+  memset (&addr, 0, sizeof (addr));
+  addr.sun_family = AF_UNIX;
+  strncpy (addr.sun_path, tmpfile, strlen (tmpfile));
 
   //int ret;
 
@@ -46,36 +52,23 @@ main (int argc, char *argv[])
   switch (retval)
     {
     case NOTAVAILABLE:
-      printf ("%s:%d - Offline\n", addr2, port);
+      printw ("%s:%d - Offline\n", addr, port);
       endwin ();
       return 0;
       break;
     case PORTCLOSED:
-      printf ("%s:%d - Closed\n", addr2, port);
+      printw ("%s:%d - Closed\n", addr, port);
       endwin ();
       break;
       return 0;
     case PORTOPEN:
-      printf ("%s:%d - Open\n", addr2, port);
+      printw ("%s:%d - Open\n", addr, port);
       break;
     }
 
 
-printf("going to fork\n");
+
   pid_t pid = fork ();
-
-  int sock = socket (AF_UNIX, SOCK_STREAM, 0);
-
-  struct sockaddr_un addr;
-  memset (&addr, 0, sizeof (addr));
-  addr.sun_family = AF_UNIX;
-  strncpy (addr.sun_path, tmpfile, strlen (tmpfile));
-printf("created tmp file\n");
-
-  if (sock == -1)
-    {
-      perror ("error creating socket");
-    }
 
   if (pid < 0)
     {
@@ -98,19 +91,16 @@ printf("created tmp file\n");
       *left = 0;
       *right = 0;
 
-	printf("I am the child\n");
       sprintf (message, "MM%s%d-%s%d>", Dir1, *left, Dir2, *right);
 
-
+      initscr ();		/* Start curses mode              */
+      noecho ();
 
       if (connect (sock, (struct sockaddr *) &addr, sizeof (addr)) == -1)
 	{
 	  perror ("child connect error");
 	  exit (-1);
 	}
-
-      initscr ();		/* Start curses mode              */
-      noecho ();
       do
 	{
 	  int ch;
@@ -153,28 +143,26 @@ printf("created tmp file\n");
 	      mvprintw (1, 0, " code for encorder\n");
 	      sprintf (message, "EN>");
 	    }
-	
+	}
 
-int ret;
-      ret=send (sock, message, strlen (message), 0);
-if(ret<0)
+
+      if (send (sock, message, strlen (message), 0) < 0)
 	{
 	  perror ("Send failed\n");
 	  return 0;
 	}
-}
-      while (1);
+      while (1)
 	free (Dir1);
       free (Dir2);
       free (left);
       free (right);
       endwin ();
-      exit (0);
+      exit ();
       }
 // ------------CHILD END------------------- 
 
 
-// -----------Parent---------------
+// -----------We must me the parent---------------
 
       if (bind (sock, (struct sockaddr *) &addr, sizeof (addr)) == -1)
 	{
@@ -197,28 +185,13 @@ if(ret<0)
 
       do
 	{
-char server_reply[MAXCHARS + 1] = { 0 };
 	  int rc;
-int ret;
-        char msg[256];
-	char msg2[256];
-        while ((rc = read(cl, msg, sizeof(msg))) > 0)
-        {
-		//sprintf(msg2,"%s",msg);
-            printf("received bytes: %s\n", msg);
-//printf("received %u bytes: %.*s\n", rc, rc, msg);
-        }
-
+	  char msg[256];
+	  ret = recv (sock, server_reply, maxChars, 0);
 	  int sock2;
-printf("received bytes after loop: %s\n", msg);
 	  sock2 =
-	    pari_AskDataFromServer (addr2, port, msg, server_reply, MAXCHARS);
-printw("msg to arduino:%d%s\n",sock2,msg);
-
-	if (sock2==0)
-{printf("Server connection error\n");
-return 0;
+	    pari_AskDataFromServer (addr, port, msg, server_reply, MAXCHARS);
+	close (sock2)
 }
-	close (sock2);}
-      while (1);
+      while (1)
       }

@@ -1,0 +1,1 @@
+/usr/bin/cc     CMakeFiles/client.dir/src/client.c.o CMakeFiles/client.dir/src/myf.c.o  -o client  -L/home/luis/Documents/PARI/T_final/git/Pari_final/../../../Aula13/Ex1/lib -rdynamic -lmyutils -lcurses -lform -Wl,-rpath,/home/luis/Documents/PARI/T_final/git/Pari_final/../../../Aula13/Ex1/lib 

@@ -1,0 +1,3 @@
+/home/luis/Documents/PARI/T_final/git/Pari_final/build/CMakeFiles/rebuild_cache.dir
+/home/luis/Documents/PARI/T_final/git/Pari_final/build/CMakeFiles/edit_cache.dir
+/home/luis/Documents/PARI/T_final/git/Pari_final/build/CMakeFiles/client.dir
